@@ -40,8 +40,20 @@ function MovieListPage() {
 
         const result = await response.json();
 
-        // Use data array from backend
-        setMovies(Array.isArray(result.data) ? result.data : []);
+        // Map backend fields to props expected by MovieTile
+        const mappedMovies = (result.data || []).map(function (movie) {
+          return {
+            id: movie.id,
+            title: movie.title,
+            genres: movie.genres || [],
+            rating: movie.vote_average,
+            poster: movie.poster_path, // image URL
+            overview: movie.overview,
+            releaseDate: movie.release_date
+          };
+        });
+
+        setMovies(mappedMovies);
       } catch (err) {
         if (err.name !== "AbortError") setError(err.message);
       } finally {
@@ -51,7 +63,7 @@ function MovieListPage() {
 
     fetchMovies();
 
-    // abort previous request if dependencies change quickly
+    // Abort previous request if parameters change quickly
     return function cleanup() {
       controller.abort();
     };
@@ -61,7 +73,7 @@ function MovieListPage() {
     "div",
     { className: "movie-list-page" },
 
-    // SearchForm or MovieDetails
+    // Either SearchForm or MovieDetails
     selectedMovie
       ? React.createElement(MovieDetails, {
           movie: selectedMovie,
@@ -76,7 +88,7 @@ function MovieListPage() {
           }
         }),
 
-    // Genre select
+    // Genre selector
     React.createElement(GenreSelect, {
       genres: genres,
       activeGenre: activeGenre,
