@@ -1,72 +1,67 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
 import SearchForm from "./SearchForm";
-import MovieDetails from "./MovieDetails";
 import GenreSelect from "./GenreSelect";
 import SortControl from "./SortControl";
 import MovieTile from "./MovieTile";
+import MovieDetails from "./MovieDetails";
 
 function MovieListPage() {
-  // state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortCriterion, setSortCriterion] = useState("title");
   const [activeGenre, setActiveGenre] = useState("All");
+  const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // mock movie list
-  const [movies] = useState([
-    {
-      id: 1,
-      title: "Inception",
-      genre: "Sci-Fi",
-      year: 2010,
-      rating: 8.8
-    },
-    {
-      id: 2,
-      title: "The Dark Knight",
-      genre: "Action",
-      year: 2008,
-      rating: 9.0
-    },
-    {
-      id: 3,
-      title: "Interstellar",
-      genre: "Sci-Fi",
-      year: 2014,
-      rating: 8.6
+  const genres = ["All", "Action", "Comedy", "Drama", "Romance", "Sci-Fi"];
+
+  useEffect(function () {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    async function fetchMovies() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams({
+          search: searchQuery,
+          genre: activeGenre === "All" ? "" : activeGenre,
+          sort: sortCriterion
+        });
+
+        const response = await fetch(
+          "http://localhost:4000/movies?" + params.toString(),
+          { signal }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch movies");
+
+        const result = await response.json();
+
+        // Use data array from backend
+        setMovies(Array.isArray(result.data) ? result.data : []);
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  ]);
 
-  const genres = ["All", "Action", "Sci-Fi", "Drama"];
+    fetchMovies();
 
-  // derived movie list (search + genre + sort)
-  const visibleMovies = movies
-    .filter(function (movie) {
-      const matchesSearch =
-        movie.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesGenre =
-        activeGenre === "All" || movie.genre === activeGenre;
-
-      return matchesSearch && matchesGenre;
-    })
-    .slice()
-    .sort(function (a, b) {
-      if (sortCriterion === "year") {
-        return b.year - a.year;
-      }
-      if (sortCriterion === "rating") {
-        return b.rating - a.rating;
-      }
-      return a.title.localeCompare(b.title);
-    });
+    // abort previous request if dependencies change quickly
+    return function cleanup() {
+      controller.abort();
+    };
+  }, [searchQuery, sortCriterion, activeGenre]);
 
   return React.createElement(
     "div",
     { className: "movie-list-page" },
 
-    // Either SearchForm OR MovieDetails
+    // SearchForm or MovieDetails
     selectedMovie
       ? React.createElement(MovieDetails, {
           movie: selectedMovie,
@@ -81,7 +76,7 @@ function MovieListPage() {
           }
         }),
 
-    // Genre selector
+    // Genre select
     React.createElement(GenreSelect, {
       genres: genres,
       activeGenre: activeGenre,
@@ -98,19 +93,25 @@ function MovieListPage() {
       }
     }),
 
+    // Loading / Error messages
+    loading && React.createElement("p", null, "Loading movies..."),
+    error && React.createElement("p", { className: "error" }, error),
+
     // Movie list
     React.createElement(
       "div",
       { className: "movie-list" },
-      visibleMovies.map(function (movie) {
-        return React.createElement(MovieTile, {
-          key: movie.id,
-          movie: movie,
-          onClick: function () {
-            setSelectedMovie(movie);
-          }
-        });
-      })
+      Array.isArray(movies)
+        ? movies.map(function (movie) {
+            return React.createElement(MovieTile, {
+              key: movie.id,
+              movie: movie,
+              onClick: function () {
+                setSelectedMovie(movie);
+              }
+            });
+          })
+        : null
     )
   );
 }
