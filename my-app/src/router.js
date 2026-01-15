@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MovieListPage from "./MovieListPage";
 import SearchFormWrapper from "./SearchFormWrapper";
 import MovieDetailsWrapper from "./MovieDetailsWrapper";

@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from "react";
-import SearchForm from "./SearchForm";
-import GenreSelect from "./GenreSelect";
-import SortControl from "./SortControl";
-import MovieTile from "./MovieTile";
-import MovieDetails from "./MovieDetails";
+import { useNavigate, useSearchParams, Outlet } from "react-router-dom";
 
-function MovieListPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortCriterion, setSortCriterion] = useState("title");
-  const [activeGenre, setActiveGenre] = useState("All");
+import MovieTile from "./MovieTile";
+
+export default function MovieListPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // URL-synced filters
+  const searchQuery = searchParams.get("query") || "";
+  const activeGenre = searchParams.get("genre") || "All";
+  const sortCriterion = searchParams.get("sort") || "title";
+
   const [movies, setMovies] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const genres = ["All", "Action", "Comedy", "Drama", "Romance", "Sci-Fi"];
 
-  useEffect(function () {
+  // Fetch movies from backend when filters change
+  useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
@@ -31,27 +34,20 @@ function MovieListPage() {
           sort: sortCriterion
         });
 
-        const response = await fetch(
-          "http://localhost:4000/movies?" + params.toString(),
-          { signal }
-        );
+        const res = await fetch(`http://localhost:4000/movies?${params.toString()}`, { signal });
+        if (!res.ok) throw new Error("Failed to fetch movies");
 
-        if (!response.ok) throw new Error("Failed to fetch movies");
+        const result = await res.json();
 
-        const result = await response.json();
-
-        // Map backend fields to props expected by MovieTile
-        const mappedMovies = (result.data || []).map(function (movie) {
-          return {
-            id: movie.id,
-            title: movie.title,
-            genres: movie.genres || [],
-            rating: movie.vote_average,
-            poster: movie.poster_path, // image URL
-            overview: movie.overview,
-            releaseDate: movie.release_date
-          };
-        });
+        const mappedMovies = (result.data || []).map((movie) => ({
+          id: movie.id,
+          title: movie.title,
+          genres: movie.genres || [],
+          rating: movie.vote_average,
+          poster: movie.poster_path,
+          overview: movie.overview,
+          releaseDate: movie.release_date
+        }));
 
         setMovies(mappedMovies);
       } catch (err) {
@@ -63,49 +59,22 @@ function MovieListPage() {
 
     fetchMovies();
 
-    // Abort previous request if parameters change quickly
-    return function cleanup() {
-      controller.abort();
-    };
-  }, [searchQuery, sortCriterion, activeGenre]);
+    return () => controller.abort();
+  }, [searchQuery, activeGenre, sortCriterion]);
+
+  // Navigate to movie details while preserving search params
+  function handleMovieClick(movieId) {
+    const queryString = searchParams.toString();
+    navigate(`/${movieId}${queryString ? "?" + queryString : ""}`);
+  }
 
   return React.createElement(
     "div",
     { className: "movie-list-page" },
+    // Nested route outlet: renders SearchForm or MovieDetails depending on URL
+    React.createElement(Outlet),
 
-    // Either SearchForm or MovieDetails
-    selectedMovie
-      ? React.createElement(MovieDetails, {
-          movie: selectedMovie,
-          onClose: function () {
-            setSelectedMovie(null);
-          }
-        })
-      : React.createElement(SearchForm, {
-          initialQuery: searchQuery,
-          onSubmit: function (query) {
-            setSearchQuery(query);
-          }
-        }),
-
-    // Genre selector
-    React.createElement(GenreSelect, {
-      genres: genres,
-      activeGenre: activeGenre,
-      onSelect: function (genre) {
-        setActiveGenre(genre);
-      }
-    }),
-
-    // Sort control
-    React.createElement(SortControl, {
-      sortBy: sortCriterion,
-      onChange: function (criterion) {
-        setSortCriterion(criterion);
-      }
-    }),
-
-    // Loading / Error messages
+    // Error/loading messages
     loading && React.createElement("p", null, "Loading movies..."),
     error && React.createElement("p", { className: "error" }, error),
 
@@ -114,18 +83,14 @@ function MovieListPage() {
       "div",
       { className: "movie-list" },
       Array.isArray(movies)
-        ? movies.map(function (movie) {
-            return React.createElement(MovieTile, {
+        ? movies.map((movie) =>
+            React.createElement(MovieTile, {
               key: movie.id,
               movie: movie,
-              onClick: function () {
-                setSelectedMovie(movie);
-              }
-            });
-          })
+              onClick: () => handleMovieClick(movie.id)
+            })
+          )
         : null
     )
   );
 }
-
-export default MovieListPage;
