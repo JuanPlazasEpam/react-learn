@@ -1,0 +1,89 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: black;
+  color: lightcoral;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+.app {
+  padding: 24px;
+}
+
+section {
+  margin-bottom: 32px;
+}
+
+button {
+  padding: 6px 12px;
+  margin: 0 4px;
+  cursor: pointer;
+  background: lightcoral;
+  color: white;
+  border-radius: 5px;
+  border-color: lightcoral;
+}
+
+h2.find-movie {
+  color: white;
+}
+
+.movie-list {
+  color: white;
+  margin: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.movie-list > div{
+  margin: 10px;
+  border-radius: 5px;
+}
+
+.movie-list span:nth-child(1) {
+  font-weight: bold;
+}
+.movie-list span:nth-child(2) {
+  border-radius: 5px;
+  border: 1px solid white;
+  padding: 5px;
+  margin-top: -5px;
+}
+
+.movie-list p {
+  font-size: 10px;
+}
+
+input {
+  padding: 6px;
+  margin-right: 8px;
+  background: black;
+  border-color: lightgray;
+  border-radius: 5px;
+  color: white;
+}
+
+.genres {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.genre-button {
+  border: 1px solid #ccc;
+  background: transparent;
+  border-radius: 5px;
+}
+
+.genre-button.active {
+  background: lightcoral;
+  color: #fff;
+}
+
