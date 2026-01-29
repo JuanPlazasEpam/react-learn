@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: black;
+  color: lightcoral;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+.app {
+  padding: 24px;
+}
+
+section {
+  margin-bottom: 32px;
+}
+
+button {
+  padding: 6px 12px;
+  margin: 0 4px;
+  cursor: pointer;
+  background: lightcoral;
+  color: white;
+  border-radius: 5px;
+  border-color: lightcoral;
+}
+
+h2.find-movie {
+  color: white;
+}
+
+input {
+  padding: 6px;
+  margin-right: 8px;
+  background: black;
+  border-color: lightgray;
+  border-radius: 5px;
+  color: white;
+}
+
+.genres {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.genre-button {
+  border: 1px solid #ccc;
+  background: transparent;
+  border-radius: 5px;
+}
+
+.genre-button.active {
+  background: lightcoral;
+  color: #fff;
+}
+
