@@ -1,52 +1,9 @@
 import React, { useState } from "react";
 import Counter from "./Counter";
+import SearchForm from "./SearchForm";
+import GenreSelect from "./GenreSelect";
 import "./index.css";
 
-function SearchForm({ initialQuery, onSearch }) {
-  const [query, setQuery] = useState(initialQuery);
-
-  const triggerSearch = () => {
-    onSearch(query);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      triggerSearch();
-    }
-  };
-
-  return (
-    <div>
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Search..."
-      />
-      <button onClick={triggerSearch}>Search</button>
-    </div>
-  );
-}
-
-function GenreSelect({ genres, selectedGenre, onSelect }) {
-  return (
-    <div className="genres">
-      {genres.map((genre) => (
-        <button
-          key={genre}
-          className={
-            "genre-button" +
-            (genre === selectedGenre ? " active" : "")
-          }
-          onClick={() => onSelect(genre)}
-        >
-          {genre}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function App() {
   const [selectedGenre, setSelectedGenre] = useState("Action");
@@ -61,7 +18,7 @@ function App() {
       </section>
 
       <section>
-        <h2 class="find-movie">FIND YOUR MOVIE</h2>
+        <h2 className="find-movie">FIND YOUR MOVIE</h2>
         <SearchForm
           initialQuery="Star Wars"
           onSearch={(value) =>
