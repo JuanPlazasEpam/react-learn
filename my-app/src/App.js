@@ -1,6 +1,4 @@
-import React from "react";
 import MovieListPage from "./MovieListPage";
-import "./index.css";
 
 import React, { useState } from "react";
 import Counter from "./Counter";
@@ -8,8 +6,9 @@ import SearchForm from "./SearchForm";
 import GenreSelect from "./GenreSelect";
 import "./index.css";
 
-
 function App() {
+  const [selectedGenre, setSelectedGenre] = useState(null);
+
   return (
     <div className="app">
       <h3><b>NETFLIX ROULETTE</b></h3>
