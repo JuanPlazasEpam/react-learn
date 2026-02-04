@@ -87,3 +87,6 @@ input {
   color: #fff;
 }
 
+.search-form, .genres, label, .movie-list-page>button {
+  margin: 20px;
+}
