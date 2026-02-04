@@ -35,6 +35,32 @@ h2.find-movie {
   color: white;
 }
 
+.movie-list {
+  color: white;
+  margin: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.movie-list > div{
+  margin: 10px;
+  border-radius: 5px;
+}
+
+.movie-list span:nth-child(1) {
+  font-weight: bold;
+}
+.movie-list span:nth-child(2) {
+  border-radius: 5px;
+  border: 1px solid white;
+  padding: 5px;
+  margin-top: -5px;
+}
+
+.movie-list p {
+  font-size: 10px;
+}
+
 input {
   padding: 6px;
   margin-right: 8px;

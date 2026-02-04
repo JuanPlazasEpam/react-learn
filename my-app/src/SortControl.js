@@ -16,7 +16,7 @@ export default function SortControl({ value, onChange }) {
           onChange: (ev) => onChange(ev.target.value),
         },
         [
-          e('option', { key: 'date', value: 'releaseDate' }, 'Release Date'),
+          e('option', { key: 'date', value: 'release_date' }, 'Release Date'),
           e('option', { key: 'title', value: 'title' }, 'Title'),
         ]
       ),
