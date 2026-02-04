@@ -4,7 +4,7 @@ class SearchForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      query: props.initialQuery,
+      query: props.initialQuery || "", // fallback to empty string
     };
   }
 
@@ -13,11 +13,13 @@ class SearchForm extends React.Component {
   };
 
   triggerSearch = () => {
-    this.props.onSearch(this.state.query);
+    const { onSearch } = this.props;
+    if (onSearch) onSearch(this.state.query);
   };
 
   handleKeyDown = (event) => {
     if (event.key === "Enter") {
+      event.preventDefault(); // <-- prevent default form submission / page reload
       this.triggerSearch();
     }
   };
@@ -25,17 +27,17 @@ class SearchForm extends React.Component {
   render() {
     return React.createElement(
       "div",
-      null,
+      { className: "search-form" },
       React.createElement("input", {
         type: "text",
         value: this.state.query,
         onChange: this.handleChange,
         onKeyDown: this.handleKeyDown,
-        placeholder: "Search...",
+        placeholder: "Search..."
       }),
       React.createElement(
         "button",
-        { onClick: this.triggerSearch },
+        { type: "button", onClick: this.triggerSearch },
         "Search"
       )
     );

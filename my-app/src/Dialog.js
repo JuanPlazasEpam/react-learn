@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import FocusTrap from 'focus-trap-react';
 
 const e = React.createElement;
 
@@ -15,39 +16,54 @@ const modalRoot =
 export default function Dialog({ title, children, onClose }) {
   return ReactDOM.createPortal(
     e(
-      'div',
-      { style: styles.overlay },
+      FocusTrap,
+      {
+        focusTrapOptions: {
+          escapeDeactivates: true,
+          clickOutsideDeactivates: true,
+          onDeactivate: onClose,
+        },
+      },
       e(
         'div',
-        { style: styles.dialog, role: 'dialog', 'aria-modal': true },
-        [
-          e(
-            'div',
-            { key: 'header', style: styles.header },
-            [
-              e(
-                'div',
-                { key: 'title', style: styles.title },
-                title
-              ),
-              e(
-                'button',
-                {
-                  key: 'close',
-                  onClick: onClose,
-                  'aria-label': 'Close dialog',
-                  style: styles.closeBtn,
-                },
-                '×'
-              ),
-            ]
-          ),
-          e(
-            'div',
-            { key: 'body', style: styles.body },
-            children
-          ),
-        ]
+        { style: styles.overlay },
+        e(
+          'div',
+          {
+            style: styles.dialog,
+            role: 'dialog',
+            'aria-modal': true,
+            'aria-label': title,
+          },
+          [
+            e(
+              'div',
+              { key: 'header', style: styles.header },
+              [
+                e(
+                  'div',
+                  { key: 'title', style: styles.title },
+                  title
+                ),
+                e(
+                  'button',
+                  {
+                    key: 'close',
+                    onClick: onClose,
+                    'aria-label': 'Close dialog',
+                    style: styles.closeBtn,
+                  },
+                  '×'
+                ),
+              ]
+            ),
+            e(
+              'div',
+              { key: 'body', style: styles.body },
+              children
+            ),
+          ]
+        )
       )
     ),
     modalRoot
@@ -75,7 +91,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px',
+    padding: 16,
     borderBottom: '1px solid #ddd',
   },
   title: {
