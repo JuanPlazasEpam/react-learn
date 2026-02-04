@@ -1,18 +1,27 @@
 import React from "react";
-import { createBrowserRouter } from "react-router-dom";
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MovieListPage from "./MovieListPage";
 import SearchFormWrapper from "./SearchFormWrapper";
 import MovieDetailsWrapper from "./MovieDetailsWrapper";
+import "./index.css";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: React.createElement(MovieListPage),
     children: [
-      { path: "/", element: React.createElement(SearchFormWrapper) },
-      { path: "/:movieId", element: React.createElement(MovieDetailsWrapper) }
+      { index: true, element: React.createElement(SearchFormWrapper) }, // default child
+      { path: ":movieId", element: React.createElement(MovieDetailsWrapper) }
     ]
   }
 ]);
 
-export default router;
+const root = document.getElementById("root");
+ReactDOM.createRoot(root).render(
+  React.createElement(
+    React.StrictMode,
+    null,
+    React.createElement(RouterProvider, { router })
+  )
+);

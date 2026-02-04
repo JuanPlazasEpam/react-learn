@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
+
 import SearchForm from "./SearchForm";
 import GenreSelect from "./GenreSelect";
 import SortControl from "./SortControl";
@@ -7,7 +9,7 @@ import MovieDetails from "./MovieDetails";
 import Dialog from "./Dialog";
 import MovieForm from "./MovieForm";
 
-function MovieListPage() {
+export default function MovieListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortCriterion, setSortCriterion] = useState("title");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -29,6 +31,7 @@ function MovieListPage() {
     async function fetchMovies() {
       setLoading(true);
       setError(null);
+
       try {
         const params = new URLSearchParams({
           filter: activeGenre === "All" ? "" : activeGenre.toLowerCase(),
@@ -41,19 +44,23 @@ function MovieListPage() {
           params.set("searchBy", "title");
         }
 
-        const response = await fetch(
+        const res = await fetch(
           "http://localhost:4000/movies?" + params.toString(),
           { signal }
         );
-        if (!response.ok) throw new Error("Failed to fetch movies");
 
-        const result = await response.json();
+        if (!res.ok) throw new Error("Failed to fetch movies");
+
+        const result = await res.json();
+
         const mappedMovies = (result.data || []).map((movie) => ({
           id: movie.id,
           title: movie.title,
           genres: movie.genres || [],
           rating: movie.vote_average,
-          poster: movie.poster_path,
+          poster: movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : null,
           overview: movie.overview,
           releaseDate: movie.release_date,
           duration: movie.duration || "",
@@ -74,14 +81,22 @@ function MovieListPage() {
   return React.createElement(
     "div",
     { className: "movie-list-page" },
-    // Nested route outlet: renders SearchForm or MovieDetails depending on URL
-    React.createElement(Outlet),
+
+    // Nested route outlet (e.g., SearchFormWrapper or MovieDetailsWrapper)
+    React.createElement(Outlet, {
+      context: {
+        searchQuery: searchQuery,
+        setSearchQuery: setSearchQuery
+      }
+    }),
 
     // MovieDetails modal
     selectedMovie &&
       React.createElement(MovieDetails, {
         movie: {
-          imageUrl: selectedMovie.poster,
+          imageUrl: selectedMovie.poster
+            ? `https://image.tmdb.org/t/p/w500${selectedMovie.poster}`
+            : null,
           year: selectedMovie.releaseDate?.slice(0, 4),
           duration: selectedMovie.duration,
           description: selectedMovie.overview,
@@ -91,24 +106,24 @@ function MovieListPage() {
         onClose: () => setSelectedMovie(null),
       }),
 
-    // SearchForm
+    // Top search form when no modal
     !selectedMovie &&
       React.createElement(SearchForm, {
         initialQuery: searchQuery,
-        onSearch: (query) => setSearchQuery(query),
+        onSearch: setSearchQuery,
       }),
 
     // Genre selector
     React.createElement(GenreSelect, {
-      genres: genres,
+      genres,
       selectedGenre: activeGenre,
-      onSelect: (genre) => setActiveGenre(genre),
+      onSelect: setActiveGenre,
     }),
 
     // Sort control
     React.createElement(SortControl, {
       value: sortCriterion,
-      onChange: (criterion) => setSortCriterion(criterion),
+      onChange: setSortCriterion,
     }),
 
     // Sort order toggle
@@ -129,39 +144,30 @@ function MovieListPage() {
     React.createElement(
       "div",
       { className: "movie-list" },
-      Array.isArray(movies)
-        ? movies.map((movie) =>
-            React.createElement(MovieTile, {
-              key: movie.id,
-              movie: movie,
-              onClick: () => setSelectedMovie(movie),
-              onEdit: () => setEditMovie(movie),
-              onDelete: () => setDeleteMovie(movie),
-            })
-          )
-        : null
+      movies.map((movie) =>
+        React.createElement(MovieTile, {
+          key: movie.id,
+          movie,
+          onClick: () => setSelectedMovie(movie),
+          onEdit: () => setEditMovie(movie),
+          onDelete: () => setDeleteMovie(movie),
+        })
+      )
     ),
 
-    // Edit Movie Dialog
+    // Edit movie dialog
     editMovie &&
       React.createElement(
         Dialog,
         { title: "Edit Movie", onClose: () => setEditMovie(null) },
-        React.createElement(
-          "div",
-          null,
-          React.createElement(MovieForm, {
-            key: editMovie.id,
-            initialMovie: editMovie,
-            onSubmit: (data) => {
-              console.log("Edited movie submitted:", data);
-              setEditMovie(null);
-            },
-          })
-        )
+        React.createElement(MovieForm, {
+          key: editMovie.id,
+          initialMovie: editMovie,
+          onSubmit: () => setEditMovie(null),
+        })
       ),
 
-    // Delete Movie Dialog
+    // Delete movie dialog
     deleteMovie &&
       React.createElement(
         Dialog,
@@ -181,10 +187,7 @@ function MovieListPage() {
             React.createElement(
               "button",
               {
-                onClick: () => {
-                  console.log("Deleted", deleteMovie);
-                  setDeleteMovie(null);
-                },
+                onClick: () => setDeleteMovie(null),
                 style: { marginLeft: 8 },
               },
               "Confirm"
