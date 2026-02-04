@@ -10,6 +10,7 @@ import Dialog from "./Dialog";
 import MovieForm from "./MovieForm";
 
 export default function MovieListPage() {
+  // STATE
   const [searchQuery, setSearchQuery] = useState("");
   const [sortCriterion, setSortCriterion] = useState("title");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -23,7 +24,7 @@ export default function MovieListPage() {
 
   const genres = ["All", "Action", "Comedy", "Drama", "Romance", "Sci-Fi"];
 
-  // Fetch movies from API
+  // FETCH MOVIES
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -76,27 +77,79 @@ export default function MovieListPage() {
 
     fetchMovies();
     return () => controller.abort();
-  }, [activeGenre, sortCriterion, sortOrder, searchQuery]);
+  }, [searchQuery, activeGenre, sortCriterion, sortOrder]);
 
   return React.createElement(
     "div",
     { className: "movie-list-page" },
 
-    // Nested route outlet (e.g., SearchFormWrapper or MovieDetailsWrapper)
-    React.createElement(Outlet, {
-      context: {
-        searchQuery: searchQuery,
-        setSearchQuery: setSearchQuery
-      }
+    // OUTLET (for SearchFormWrapper if needed)
+    React.createElement(Outlet, null),
+
+    // TOP SEARCH FORM
+    React.createElement(SearchForm, {
+      initialQuery: searchQuery,
+      onSearch: setSearchQuery,
     }),
 
-    // MovieDetails modal
+    // GENRE SELECTOR
+    React.createElement(GenreSelect, {
+      genres,
+      selectedGenre: activeGenre,
+      onSelect: setActiveGenre,
+    }),
+
+    // SORT CONTROL
+    React.createElement(SortControl, {
+      value: sortCriterion,
+      onChange: setSortCriterion,
+    }),
+
+    // SORT ORDER TOGGLE
+    React.createElement(
+      "button",
+      {
+        onClick: () =>
+          setSortOrder(sortOrder === "asc" ? "desc" : "asc"),
+        style: { marginLeft: 8, padding: "4px 8px", cursor: "pointer" },
+      },
+      `Order: ${sortOrder.toUpperCase()}`
+    ),
+
+    // LOADING / ERROR
+    loading && React.createElement("p", null, "Loading movies..."),
+    error && React.createElement("p", { className: "error" }, error),
+
+    // MOVIE LIST
+    React.createElement(
+      "div",
+      { className: "movie-list" },
+      movies.map((movie) =>
+        React.createElement(MovieTile, {
+          key: movie.id,
+          movie: movie,
+          onClick: () => setSelectedMovie(movie),
+          onEdit: () => setEditMovie(movie),
+          onDelete: () => setDeleteMovie(movie),
+        })
+      )
+    ),
+
+    // BOTTOM SEARCH FORM
+    React.createElement(
+      "div",
+      { className: "bottom-search" },
+      React.createElement(SearchForm, {
+        initialQuery: searchQuery,
+        onSearch: setSearchQuery,
+      })
+    ),
+
+    // MOVIE DETAILS MODAL
     selectedMovie &&
       React.createElement(MovieDetails, {
         movie: {
-          imageUrl: selectedMovie.poster
-            ? `https://image.tmdb.org/t/p/w500${selectedMovie.poster}`
-            : null,
+          imageUrl: selectedMovie.poster,
           year: selectedMovie.releaseDate?.slice(0, 4),
           duration: selectedMovie.duration,
           description: selectedMovie.overview,
@@ -106,56 +159,7 @@ export default function MovieListPage() {
         onClose: () => setSelectedMovie(null),
       }),
 
-    // Top search form when no modal
-    !selectedMovie &&
-      React.createElement(SearchForm, {
-        initialQuery: searchQuery,
-        onSearch: setSearchQuery,
-      }),
-
-    // Genre selector
-    React.createElement(GenreSelect, {
-      genres,
-      selectedGenre: activeGenre,
-      onSelect: setActiveGenre,
-    }),
-
-    // Sort control
-    React.createElement(SortControl, {
-      value: sortCriterion,
-      onChange: setSortCriterion,
-    }),
-
-    // Sort order toggle
-    React.createElement(
-      "button",
-      {
-        onClick: () => setSortOrder(sortOrder === "asc" ? "desc" : "asc"),
-        style: { marginLeft: 8, padding: "4px 8px", cursor: "pointer" },
-      },
-      `Order: ${sortOrder.toUpperCase()}`
-    ),
-
-    // Loading / Error
-    loading && React.createElement("p", null, "Loading movies..."),
-    error && React.createElement("p", { className: "error" }, error),
-
-    // Movie list
-    React.createElement(
-      "div",
-      { className: "movie-list" },
-      movies.map((movie) =>
-        React.createElement(MovieTile, {
-          key: movie.id,
-          movie,
-          onClick: () => setSelectedMovie(movie),
-          onEdit: () => setEditMovie(movie),
-          onDelete: () => setDeleteMovie(movie),
-        })
-      )
-    ),
-
-    // Edit movie dialog
+    // EDIT DIALOG
     editMovie &&
       React.createElement(
         Dialog,
@@ -167,7 +171,7 @@ export default function MovieListPage() {
         })
       ),
 
-    // Delete movie dialog
+    // DELETE DIALOG
     deleteMovie &&
       React.createElement(
         Dialog,
@@ -175,7 +179,11 @@ export default function MovieListPage() {
         React.createElement(
           "div",
           { style: { textAlign: "center" } },
-          React.createElement("p", null, `Are you sure you want to delete "${deleteMovie.title}"?`),
+          React.createElement(
+            "p",
+            null,
+            `Are you sure you want to delete "${deleteMovie.title}"?`
+          ),
           React.createElement(
             "div",
             { style: { marginTop: 16 } },

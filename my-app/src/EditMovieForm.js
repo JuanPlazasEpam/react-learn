@@ -10,7 +10,7 @@ export default function EditMovieForm() {
   const [movie, setMovie] = React.useState(null);
 
   React.useEffect(() => {
-    fetch("https://your-api/movies/" + movieId)
+    fetch("http://localhost:3000/" + movieId)
       .then((res) => res.json())
       .then((data) => setMovie(data));
   }, [movieId]);
@@ -20,7 +20,7 @@ export default function EditMovieForm() {
   }
 
   async function handleSubmit(updatedMovie) {
-    await fetch("https://your-api/movies/" + movieId, {
+    await fetch("http://localhost:3000/" + movieId, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedMovie)
