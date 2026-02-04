@@ -1,6 +1,6 @@
 import React from 'react';
-import Dialog from '../Dialog/Dialog';
-import MovieForm from '../MovieForm/MovieForm';
+import Dialog from './Dialog';
+import MovieForm from './MovieForm';
 
 export default {
   title: 'Use cases/Add Movie',
